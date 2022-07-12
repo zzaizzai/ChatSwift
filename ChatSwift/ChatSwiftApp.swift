@@ -6,9 +6,16 @@
 //
 
 import SwiftUI
+import Firebase
 
 @main
 struct ChatSwiftApp: App {
+    
+        init() {
+            FirebaseApp.configure()
+            print("Firebase Connected")
+        }
+    
     var body: some Scene {
         WindowGroup {
             LoginView()
