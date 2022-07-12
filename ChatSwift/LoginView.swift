@@ -12,6 +12,8 @@ struct LoginView: View {
     @State var isLoginMode = true
     @State var email = ""
     @State var password = ""
+    @State var passwordCheck = ""
+    @State var errorMessage = ""
     
     var body: some View {
         NavigationView{
@@ -28,23 +30,32 @@ struct LoginView: View {
                         .padding()
                     
                     if !isLoginMode {
-                        Image(systemName: "person.fill")
+                        Image(systemName: "photo")
                             .font(.system(size: 64))
                             .padding()
                     }
                     
-                    Group {
-                        TextField("Email", text: $email)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                        TextField("Password", text: $password)
-                            .autocapitalization(.none)
-                    }.padding(12)
-                        .background(Color.white)
+                        Group {
+                            TextField("Email", text: $email)
+                                .keyboardType(.emailAddress)
+                                .autocapitalization(.none)
+                            TextField("Password", text: $password)
+                                .autocapitalization(.none)
+                            
+                            if !isLoginMode {
+                                TextField("PasswordCheck", text: $passwordCheck)
+                                    .autocapitalization(.none)
+                            }
+                        }.padding(12)
+                            .background(Color.white)
+                        
+                    
+                    
+
                     
                     
                     Button{
-                        handleAction()
+                        loginOrCreateAccount()
                         
                     } label: {
                         HStack{
@@ -56,6 +67,10 @@ struct LoginView: View {
                         }.background(Color.blue)
                     }
                     
+                    Text(errorMessage)
+                        .foregroundColor(Color.red)
+                        .font(Font.system(size: 18).bold())
+                    
                 }.padding()
                 
             }
@@ -64,11 +79,32 @@ struct LoginView: View {
         }
     }
     
-    private func handleAction() {
+    private func loginOrCreateAccount() {
         if isLoginMode {
-            print("login")
+            if (password.count < 4 || email.count < 4 ) {
+                print("input email and password more than 4 characters")
+                errorMessage = "input email and password more than 4 characters"
+                return
+            }
+            errorMessage = "login"
+            
         } else {
+            //check string length of mail and password
+            if (password.count < 4 || email.count < 4 || passwordCheck.count < 4) {
+                print("input email and password more than 4 characters")
+                errorMessage = "input email and password more than 4 characters"
+                return
+            }
+            
+            //passsword check
+            if (password != passwordCheck) {
+                print("password dose not correspond to passwordCheck")
+                errorMessage = "password dose not correspond to passwordCheck"
+                return
+            }
             print("register")
+            errorMessage = "good"
+            
         }
     }
 }
