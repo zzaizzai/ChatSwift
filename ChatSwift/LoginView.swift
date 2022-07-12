@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Firebase
 
 struct LoginView: View {
     
@@ -14,6 +15,7 @@ struct LoginView: View {
     @State var password = ""
     @State var passwordCheck = ""
     @State var errorMessage = ""
+    
     
     var body: some View {
         NavigationView{
@@ -30,9 +32,16 @@ struct LoginView: View {
                         .padding()
                     
                     if !isLoginMode {
-                        Image(systemName: "photo")
-                            .font(.system(size: 64))
-                            .padding()
+                        Button{
+                            print("photo")
+                            
+                        } label: {
+                            Image(systemName: "photo")
+                                .font(.system(size: 64))
+                                .padding()
+                            
+                        }
+                        
                     }
                     
                         Group {
@@ -49,10 +58,6 @@ struct LoginView: View {
                         }.padding(12)
                             .background(Color.white)
                         
-                    
-                    
-
-                    
                     
                     Button{
                         loginOrCreateAccount()
@@ -77,6 +82,8 @@ struct LoginView: View {
             .navigationTitle(isLoginMode ? "Login" : "Create Account")
             .background(Color(.init(white: 0, alpha: 0.15)).ignoresSafeArea())
         }
+        //for ipad..
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     private func loginOrCreateAccount() {
@@ -86,7 +93,8 @@ struct LoginView: View {
                 errorMessage = "input email and password more than 4 characters"
                 return
             }
-            errorMessage = "login"
+            
+            login()
             
         } else {
             //check string length of mail and password
@@ -102,10 +110,30 @@ struct LoginView: View {
                 errorMessage = "password dose not correspond to passwordCheck"
                 return
             }
-            print("register")
-            errorMessage = "good"
+            
+            createNewAccount()
             
         }
+    }
+    
+    private func login(){
+        errorMessage = "login"
+        
+    }
+    
+    private func createNewAccount(){
+        print("register")
+        cleanTextfileds()
+        errorMessage = "successfully account created"
+        isLoginMode = true
+        
+    }
+    
+    private func cleanTextfileds(){
+        email = ""
+        password = ""
+        passwordCheck = ""
+        
     }
 }
 
