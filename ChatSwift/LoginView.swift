@@ -31,6 +31,9 @@ struct LoginView: View {
                             .tag(true)
                         Text("Create Account")
                             .tag(false)
+                            .onChange(of: isLoginMode) { _ in
+                                self.cleanTextfileds()
+                            }
                     }.pickerStyle(SegmentedPickerStyle())
                         .padding()
                     
@@ -135,6 +138,11 @@ struct LoginView: View {
                 return
             }
             
+            
+            if (self.image == nil) {
+                errorMessage = "please pick a image"
+                return
+            }
             createNewAccount()
             
         }
@@ -174,9 +182,33 @@ struct LoginView: View {
             errorMessage = ""
             successMessage = "successfully created user: \(result?.user.uid ?? "")"
             
-            print("register")
-            cleanTextfileds()
+            imageToStorage()
+            
+            self.cleanTextfileds()
             isLoginMode = true
+        }
+        
+    }
+    
+    private func imageToStorage() {
+//        let imageUrl = UUID().uuidString
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let ref = Storage.storage().reference(withPath: uid)
+        guard let imageData = self.image?.jpegData(compressionQuality: 0.5) else { return }
+        ref.putData(imageData, metadata: nil) { metadata, error in
+            if let error = error {
+                self.errorMessage = "Failed to push image to Storage: \(error)"
+                self.successMessage = ""
+                return
+            }
+            ref.downloadURL { url, error in
+                if let error = error {
+                    self.successMessage = "Failed to get downloadUrl: \(error)"
+                    return
+                }
+                
+                self.successMessage = "stored image with url: \(url?.absoluteString ?? "")"
+            }
         }
         
     }
