@@ -15,6 +15,9 @@ struct LoginView: View {
     @State var password = ""
     @State var passwordCheck = ""
     @State var errorMessage = ""
+    @State var successMessage = ""
+    @State var showImagePicker = false
+    @State var image: UIImage?
     
     
     var body: some View {
@@ -33,12 +36,26 @@ struct LoginView: View {
                     
                     if !isLoginMode {
                         Button{
-                            print("photo")
+                            showImagePicker.toggle()
                             
                         } label: {
-                            Image(systemName: "photo")
-                                .font(.system(size: 64))
-                                .padding()
+                            ZStack{
+                                if let image = self.image {
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .frame(width: 128, height: 128)
+                                        .scaledToFill()
+                                        .cornerRadius(64)
+                                        .overlay(RoundedRectangle(cornerRadius: 64)
+                                            .stroke(Color.black, lineWidth: 3))
+                                } else {
+                                    Image(systemName: "photo")
+                                        .font(.system(size: 64))
+                                        .padding()
+                                        .foregroundColor(Color(.label))
+                                }
+                                
+                            }
                             
                         }
                         
@@ -76,6 +93,10 @@ struct LoginView: View {
                         .foregroundColor(Color.red)
                         .font(Font.system(size: 18).bold())
                     
+                    Text(successMessage)
+                        .foregroundColor(Color.blue)
+                        .font(Font.system(size: 18).bold())
+                    
                 }.padding()
                 
             }
@@ -84,6 +105,9 @@ struct LoginView: View {
         }
         //for ipad..
         .navigationViewStyle(StackNavigationViewStyle())
+        .fullScreenCover(isPresented: $showImagePicker, onDismiss: nil) {
+            ImagePicker(image: $image)
+        }
     }
     
     private func loginOrCreateAccount() {
@@ -117,15 +141,43 @@ struct LoginView: View {
     }
     
     private func login(){
-        errorMessage = "login"
+        Auth.auth().signIn(withEmail: email, password: password) {
+            result, error in
+            if let error = error {
+                print("Failed to login user:", error)
+                successMessage = ""
+                errorMessage = "Failed to login user: \(error)"
+                return
+            }
+            
+            print("successfully logged in as user: \(result?.user.uid ?? "")")
+            errorMessage = ""
+            successMessage = "successfully logged in as user: \(result?.user.uid ?? "")"
+            
+        }
         
     }
     
     private func createNewAccount(){
-        print("register")
-        cleanTextfileds()
-        errorMessage = "successfully account created"
-        isLoginMode = true
+
+        Auth.auth().createUser(withEmail: email, password: password) {
+            result, error in
+            if let error = error {
+                print("Fialed to create user:", error)
+                successMessage = ""
+                errorMessage = "Fialed to create user: \(error)"
+                return
+            }
+            
+            print("successfully created user: \(result?.user.uid ?? "")")
+            
+            errorMessage = ""
+            successMessage = "successfully created user: \(result?.user.uid ?? "")"
+            
+            print("register")
+            cleanTextfileds()
+            isLoginMode = true
+        }
         
     }
     
