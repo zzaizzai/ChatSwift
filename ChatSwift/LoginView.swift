@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Firebase
+import FirebaseFirestore
 
 struct LoginView: View {
     
@@ -39,7 +40,7 @@ struct LoginView: View {
                     
                     if !isLoginMode {
                         Button{
-                            showImagePicker.toggle()
+                            self.showImagePicker.toggle()
                             
                         } label: {
                             ZStack{
@@ -85,9 +86,15 @@ struct LoginView: View {
                     } label: {
                         HStack{
                             Spacer()
-                            Text("Create Account")
-                                .foregroundColor(.white)
-                                .padding(.vertical, 10)
+                            if isLoginMode {
+                                Text("Log In")
+                                    .foregroundColor(.white)
+                                    .padding(.vertical, 10)
+                            } else {
+                                Text("Create Account")
+                                    .foregroundColor(.white)
+                                    .padding(.vertical, 10)
+                            }
                             Spacer()
                         }.background(Color.blue)
                     }
@@ -117,7 +124,7 @@ struct LoginView: View {
         if isLoginMode {
             if (password.count < 4 || email.count < 4 ) {
                 print("input email and password more than 4 characters")
-                errorMessage = "input email and password more than 4 characters"
+                self.errorMessage = "input email and password more than 4 characters"
                 return
             }
             
@@ -127,20 +134,20 @@ struct LoginView: View {
             //check string length of mail and password
             if (password.count < 4 || email.count < 4 || passwordCheck.count < 4) {
                 print("input email and password more than 4 characters")
-                errorMessage = "input email and password more than 4 characters"
+                self.errorMessage = "input email and password more than 4 characters"
                 return
             }
             
             //passsword check
             if (password != passwordCheck) {
                 print("password dose not correspond to passwordCheck")
-                errorMessage = "password dose not correspond to passwordCheck"
+                self.errorMessage = "password dose not correspond to passwordCheck"
                 return
             }
             
             
             if (self.image == nil) {
-                errorMessage = "please pick a image"
+                self.errorMessage = "please pick a image"
                 return
             }
             createNewAccount()
@@ -149,18 +156,19 @@ struct LoginView: View {
     }
     
     private func login(){
+        
         Auth.auth().signIn(withEmail: email, password: password) {
             result, error in
             if let error = error {
                 print("Failed to login user:", error)
-                successMessage = ""
-                errorMessage = "Failed to login user: \(error)"
+                self.successMessage = ""
+                self.errorMessage = "Failed to login user: \(error)"
                 return
             }
             
             print("successfully logged in as user: \(result?.user.uid ?? "")")
-            errorMessage = ""
-            successMessage = "successfully logged in as user: \(result?.user.uid ?? "")"
+            self.errorMessage = ""
+            self.successMessage = "successfully logged in as user: \(result?.user.uid ?? "")"
             
         }
         
@@ -172,20 +180,19 @@ struct LoginView: View {
             result, error in
             if let error = error {
                 print("Fialed to create user:", error)
-                successMessage = ""
-                errorMessage = "Fialed to create user: \(error)"
+                self.successMessage = ""
+                self.errorMessage = "Fialed to create user: \(error)"
                 return
             }
             
             print("successfully created user: \(result?.user.uid ?? "")")
             
-            errorMessage = ""
-            successMessage = "successfully created user: \(result?.user.uid ?? "")"
+            self.errorMessage = ""
+            self.successMessage = "successfully created user: \(result?.user.uid ?? "")"
             
             imageToStorage()
             
-            self.cleanTextfileds()
-            isLoginMode = true
+
         }
         
     }
@@ -208,15 +215,44 @@ struct LoginView: View {
                 }
                 
                 self.successMessage = "stored image with url: \(url?.absoluteString ?? "")"
+                guard let url = url else { return }
+                storeUserInformation(imageProfileUrl: url)
+                
             }
         }
         
     }
     
+    private func storeUserInformation(imageProfileUrl: URL) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let userData = [
+            "email": self.email,
+            "uid": uid,
+            "profileImageUrl": imageProfileUrl.absoluteString]
+        Firestore.firestore().collection("users").document(uid).setData(userData) { error in
+            if let error = error {
+                print(error)
+                self.errorMessage = "\(error)"
+                return
+            }
+            
+            print("stored new user data")
+            
+            self.cleanTextfileds()
+            self.isLoginMode = true
+            
+            self.errorMessage = ""
+            self.successMessage = "stored user data"
+            
+            
+        }
+        
+    }
+    
     private func cleanTextfileds(){
-        email = ""
-        password = ""
-        passwordCheck = ""
+        self.email = ""
+        self.password = ""
+        self.passwordCheck = ""
         
     }
 }
