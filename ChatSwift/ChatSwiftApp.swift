@@ -18,7 +18,9 @@ struct ChatSwiftApp: App {
     
     var body: some Scene {
         WindowGroup {
-            LoginView()
+            LoginView(didloginProcess: {
+                
+            })
         }
     }
 }
