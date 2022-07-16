@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A62A57E028830FF900038D63 /* ChatLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62A57DF28830FF900038D63 /* ChatLogView.swift */; };
 		A62A878C288034EF0042AB58 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A62A878B288034EF0042AB58 /* FirebaseAuth */; };
 		A62A878E288034EF0042AB58 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A62A878D288034EF0042AB58 /* FirebaseFirestore */; };
 		A62A8790288034EF0042AB58 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = A62A878F288034EF0042AB58 /* FirebaseStorage */; };
@@ -23,6 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A62A57DF28830FF900038D63 /* ChatLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLogView.swift; sourceTree = "<group>"; };
 		A62A87912880469C0042AB58 /* MainMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMessageView.swift; sourceTree = "<group>"; };
 		A63AF7A12882CC1400A52DC0 /* NewMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewMessageView.swift; sourceTree = "<group>"; };
 		A63AF7A32882D9C900A52DC0 /* ChatUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatUser.swift; sourceTree = "<group>"; };
@@ -72,6 +74,7 @@
 				A63AF7A72882F3BA00A52DC0 /* GoogleService-Info.plist */,
 				A63AF7A32882D9C900A52DC0 /* ChatUser.swift */,
 				A6CF87FF287C4A5100106F5E /* ChatSwiftApp.swift */,
+				A62A57DF28830FF900038D63 /* ChatLogView.swift */,
 				A62A87912880469C0042AB58 /* MainMessageView.swift */,
 				A63AF7A12882CC1400A52DC0 /* NewMessageView.swift */,
 				A6CF8801287C4A5100106F5E /* LoginView.swift */,
@@ -175,6 +178,7 @@
 				A6D2EEAD287F00E600C196EF /* ImagePicker.swift in Sources */,
 				A62A87922880469C0042AB58 /* MainMessageView.swift in Sources */,
 				A6CF8802287C4A5100106F5E /* LoginView.swift in Sources */,
+				A62A57E028830FF900038D63 /* ChatLogView.swift in Sources */,
 				A6CF8800287C4A5100106F5E /* ChatSwiftApp.swift in Sources */,
 				A63AF7A22882CC1400A52DC0 /* NewMessageView.swift in Sources */,
 			);
