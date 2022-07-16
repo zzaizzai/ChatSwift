@@ -58,6 +58,8 @@ class MainMessageViewModel: ObservableObject {
 struct MainMessageView: View {
     
     @State var showOptions = false
+    
+    @State var showNavigateToChat = false
     @ObservedObject private var vm  = MainMessageViewModel()
     var body: some View {
         NavigationView{
@@ -66,6 +68,9 @@ struct MainMessageView: View {
                 
                 messageView
                 
+                NavigationLink("???", isActive: $showNavigateToChat) {
+                    ChatLogView(opponentChatUser: self.chatUser)
+                }
             }
             .overlay(
                 newMessageButton, alignment: .bottom)
@@ -121,18 +126,21 @@ struct MainMessageView: View {
         ScrollView{
             ForEach(0..<10, id: \.self){ num in
                 VStack{
-                    HStack(spacing: 16){
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 32))
-                        
-                        VStack{
-                            Text("username")
-                                .font(.system(size: 16, weight: .bold))
-                            Text("message")
+                    NavigationLink{
+                        Text("dd")
+                    } label: {
+                        HStack(spacing: 16){
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 32))
+                            
+                            VStack{
+                                Text("username")
+                                    .font(.system(size: 16, weight: .bold))
+                                Text("message")
+                            }
+                            Spacer()
+                            Text("date")
                         }
-                        Spacer()
-                        Text("date")
-                        
                     }
                     Divider()
                         .padding(.vertical, 8)
@@ -144,6 +152,7 @@ struct MainMessageView: View {
     }
     
     @State var showNewMessageScreen = false
+    @State var chatUser: ChatUser?
     
     private var newMessageButton: some View {
         Button{
@@ -161,8 +170,27 @@ struct MainMessageView: View {
             .padding(.horizontal)
         }
         .fullScreenCover(isPresented: $showNewMessageScreen) {
-            NewMessageView()
+            NewMessageView(selectedNewUser: {
+                user in
+                print(user.email)
+                self.chatUser = user
+                self.showNavigateToChat.toggle()
+            })
         }
+    }
+}
+
+struct ChatLogView: View {
+    
+    let opponentChatUser: ChatUser?
+    
+    var body: some View {
+        ScrollView{
+            ForEach(0..<10) {num in
+                Text("messages")
+            }
+        }.navigationTitle(opponentChatUser?.email ?? "")
+            .navigationBarTitleDisplayMode(.inline)
     }
 }
 
