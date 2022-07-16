@@ -10,20 +10,29 @@ import Firebase
 import FirebaseFirestore
 import SDWebImageSwiftUI
 
-struct ChatUser {
-    let uid, email, profileImageUrl: String
-}
-
 class MainMessageViewModel: ObservableObject {
     
     @Published var errorMessage = ""
     @Published var chatUser: ChatUser?
+    @Published var isUserLoggeOut = false
     
     init() {
+        
+        DispatchQueue.main.async {
+            self.isUserLoggeOut = (Auth.auth().currentUser?.uid == nil)
+        }
+        
         fetchCurrentUser()
     }
     
-    private func fetchCurrentUser() {
+    func signOutFirebase(){
+        isUserLoggeOut.toggle()
+        try? Auth.auth().signOut()
+        
+        
+    }
+    
+    func fetchCurrentUser() {
         
         self.errorMessage = "fetching current user"
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -39,12 +48,8 @@ class MainMessageViewModel: ObservableObject {
             guard let data = snapshot?.data() else {
                 self.errorMessage = "no data"
                 return }
-            let uid = data["uid"] as? String ?? ""
-            let email = data["email"] as? String ?? ""
-            let profileImageUrl = data["profileImageUrl"] as? String ?? ""
-            self.chatUser = ChatUser(uid: uid, email: email, profileImageUrl: profileImageUrl)
             
-            self.errorMessage = "\(data)"
+            self.chatUser = .init(data: data)
             
         }
     }
@@ -100,10 +105,15 @@ struct MainMessageView: View {
             .init(title: Text("setting"), message: Text("good"),
                   buttons:
                     [.destructive(Text("Sign Out"), action: {
-                print("ddd")
+                vm.signOutFirebase()
             }),
                      .cancel()
-                    ])}
+                    ])}.fullScreenCover(isPresented: $vm.isUserLoggeOut) {
+                LoginView {
+                    self.vm.isUserLoggeOut = false
+                    self.vm.fetchCurrentUser()
+                }
+            }
         
     }
     
@@ -133,10 +143,11 @@ struct MainMessageView: View {
         
     }
     
+    @State var showNewMessageScreen = false
+    
     private var newMessageButton: some View {
         Button{
-            print("newmessage")
-            
+            showNewMessageScreen.toggle()
         } label: {
             HStack{
                 Spacer()
@@ -148,6 +159,9 @@ struct MainMessageView: View {
             .background(Color.blue)
             .cornerRadius(32)
             .padding(.horizontal)
+        }
+        .fullScreenCover(isPresented: $showNewMessageScreen) {
+            NewMessageView()
         }
     }
 }

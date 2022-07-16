@@ -11,14 +11,16 @@ import FirebaseFirestore
 
 struct LoginView: View {
     
-    @State var isLoginMode = true
-    @State var email = ""
-    @State var password = ""
-    @State var passwordCheck = ""
-    @State var errorMessage = ""
-    @State var successMessage = ""
-    @State var showImagePicker = false
-    @State var image: UIImage?
+    let didloginProcess: () -> ()
+    
+    @State private var isLoginMode = true
+    @State private var email = ""
+    @State private var password = ""
+    @State private var passwordCheck = ""
+    @State private var errorMessage = ""
+    @State private var successMessage = ""
+    @State private var showImagePicker = false
+    @State private var image: UIImage?
     
     
     var body: some View {
@@ -170,6 +172,8 @@ struct LoginView: View {
             self.errorMessage = ""
             self.successMessage = "successfully logged in as user: \(result?.user.uid ?? "")"
             
+            self.didloginProcess()
+            
         }
         
     }
@@ -259,6 +263,8 @@ struct LoginView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        LoginView()
+        LoginView(didloginProcess: {
+            
+        })
     }
 }
