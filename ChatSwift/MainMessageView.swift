@@ -69,7 +69,7 @@ struct MainMessageView: View {
                 messageView
                 
                 NavigationLink("???", isActive: $showNavigateToChat) {
-                    ChatLogView(opponentChatUser: self.chatUser)
+                    ChatLogView(chatUser: self.chatUser)
                 }
             }
             .overlay(
@@ -180,19 +180,7 @@ struct MainMessageView: View {
     }
 }
 
-struct ChatLogView: View {
-    
-    let opponentChatUser: ChatUser?
-    
-    var body: some View {
-        ScrollView{
-            ForEach(0..<10) {num in
-                Text("messages")
-            }
-        }.navigationTitle(opponentChatUser?.email ?? "")
-            .navigationBarTitleDisplayMode(.inline)
-    }
-}
+
 
 
 struct MainMessageView_Previews: PreviewProvider {
