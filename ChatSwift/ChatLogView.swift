@@ -31,6 +31,10 @@ class ChatLogViewModel: ObservableObject {
     
     @Published var chatMessages = [ChatMessages]()
     
+    @Published var scrollCount = 0
+    
+    
+    
     let chatUser : ChatUser?
     
     
@@ -56,8 +60,14 @@ class ChatLogViewModel: ObservableObject {
                 if change.type == .added {
                     let data = change.document.data()
                     self.chatMessages.append(.init(documentId: change.document.documentID, data: data))
+                    self.scrollCount += 1
                 }
             })
+            
+            //show latest message
+            DispatchQueue.main.async {
+                self.scrollCount += 1
+            }
             
         }
     }
@@ -102,6 +112,7 @@ class ChatLogViewModel: ObservableObject {
             }
         
     }
+    
 }
 
 struct ChatLogView: View {
@@ -130,46 +141,33 @@ struct ChatLogView: View {
         }
         .navigationTitle(chatUser?.email ?? "chatopponent")
         .navigationBarTitleDisplayMode(.inline)
+//        .navigationBarItems(trailing: Button(action: {
+//            vm.scrollCount += 1
+//        }, label: {
+//            Text("count: \(vm.scrollCount)")
+//        }))
     }
     
     private var messagesView: some View {
         ScrollView{
-            ForEach(vm.chatMessages) { messages in
-                if messages.fromId == Auth.auth().currentUser?.uid {
-                    HStack{
-                        Spacer()
-                        HStack{
-                            
-                            Text(messages.text)
-                                .foregroundColor(.white)
-                            
-                        }
-                        .padding()
-                        .background(Color.gray)
-                        .cornerRadius(23)
-                        
+            ScrollViewReader { ScrollViewProxy in
+                VStack{
+                    ForEach(vm.chatMessages) { message in
+                        MessageView(message: message)
                     }
-                    .padding(.horizontal)
-                } else {
-                    HStack{
-                        HStack{
-                            
-                            Text(messages.text)
-                                .foregroundColor(.black)
-                            
-                        }
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(23)
-                        
-                        Spacer()
-                        
-                    }
-                    .padding(.horizontal)
+                    HStack{ Spacer() }
+                        .id("Empty")
                 }
+                
+                .onReceive(vm.$scrollCount) { _ in
+                    withAnimation(.easeOut(duration: 0.5)){
+                        ScrollViewProxy.scrollTo("Empty", anchor: .bottom)
+                        
+                    }
+                    
+                }
+                
             }
-            
-            HStack{ Spacer() }
             
         }
         .background(Color(.init(gray: 0.7, alpha: 1)))
@@ -180,7 +178,8 @@ struct ChatLogView: View {
                     .ignoresSafeArea())
         }
     }
-    
+
+
     private var chatBottom: some View {
         HStack(spacing: 16){
             Image(systemName: "photo")
@@ -201,10 +200,49 @@ struct ChatLogView: View {
     }
 }
 
+struct MessageView: View {
+    
+    var message: ChatMessages
+    var body: some View {
+        if message.fromId == Auth.auth().currentUser?.uid {
+            HStack{
+                Spacer()
+                HStack{
+                    
+                    Text(message.text)
+                        .foregroundColor(.white)
+                    
+                }
+                .padding()
+                .background(Color.gray)
+                .cornerRadius(23)
+                
+            }
+            .padding(.horizontal)
+        } else {
+            HStack{
+                HStack{
+                    
+                    Text(message.text)
+                        .foregroundColor(.black)
+                    
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(23)
+                
+                Spacer()
+                
+            }
+            .padding(.horizontal)
+        }
+    }
+}
+
 struct ChatLogView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView{
-//                        ChatLogView(chatUser: .init(data: ["uid":"123" ,"email": "124@gmail.com"]))
+            //                        ChatLogView(chatUser: .init(data: ["uid":"123" ,"email": "124@gmail.com"]))
             MainMessageView()
         }
     }
