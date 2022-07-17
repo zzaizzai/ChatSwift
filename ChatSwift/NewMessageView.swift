@@ -25,7 +25,7 @@ class NewMessageViewModel: ObservableObject {
                 self.errorMessage = "Failed to fetch users: \(error)"
                 print("failed to fetch users: \(error)")
                 return
-                }
+            }
             
             documentsSnapshot?.documents.forEach({ snapshot in
                 let data = snapshot.data()
