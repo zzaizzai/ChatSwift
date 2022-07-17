@@ -25,6 +25,7 @@ class MainMessageViewModel: ObservableObject {
         fetchCurrentUser()
     }
     
+    
     func signOutFirebase(){
         isUserLoggeOut.toggle()
         try? Auth.auth().signOut()
@@ -86,7 +87,7 @@ struct MainMessageView: View {
                 .frame(width: 53, height: 53)
                 .clipped()
                 .cornerRadius(44)
-
+            
             VStack(alignment: .leading, spacing: 4){
                 Text("\(vm.chatUser?.email ?? "no email")")
                     .font(.system(size:24, weight: .bold))

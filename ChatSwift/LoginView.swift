@@ -67,20 +67,20 @@ struct LoginView: View {
                         
                     }
                     
-                        Group {
-                            TextField("Email", text: $email)
-                                .keyboardType(.emailAddress)
-                                .autocapitalization(.none)
-                            TextField("Password", text: $password)
-                                .autocapitalization(.none)
-                            
-                            if !isLoginMode {
-                                TextField("PasswordCheck", text: $passwordCheck)
-                                    .autocapitalization(.none)
-                            }
-                        }.padding(12)
-                            .background(Color.white)
+                    Group {
+                        TextField("Email", text: $email)
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                        TextField("Password", text: $password)
+                            .autocapitalization(.none)
                         
+                        if !isLoginMode {
+                            TextField("PasswordCheck", text: $passwordCheck)
+                                .autocapitalization(.none)
+                        }
+                    }.padding(12)
+                        .background(Color.white)
+                    
                     
                     Button{
                         loginOrCreateAccount()
@@ -179,7 +179,7 @@ struct LoginView: View {
     }
     
     private func createNewAccount(){
-
+        
         Auth.auth().createUser(withEmail: email, password: password) {
             result, error in
             if let error = error {
@@ -196,13 +196,13 @@ struct LoginView: View {
             
             imageToStorage()
             
-
+            
         }
         
     }
     
     private func imageToStorage() {
-//        let imageUrl = UUID().uuidString
+        //        let imageUrl = UUID().uuidString
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let ref = Storage.storage().reference(withPath: uid)
         guard let imageData = self.image?.jpegData(compressionQuality: 0.5) else { return }
