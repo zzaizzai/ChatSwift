@@ -9,20 +9,9 @@ import SwiftUI
 import Firebase
 import FirebaseFirestore
 
-struct ChatMessages: Identifiable {
-    
-    var id: String { documentId }
-    
-    let documentId: String
-    let fromId, toId, text: String
-    
-    init(documentId: String, data: [String:Any]){
-        self.documentId = documentId
-        self.fromId = data["fromId"] as? String ?? ""
-        self.toId = data["toId"] as? String ?? ""
-        self.text = data["text"] as? String ?? ""
-    }
-}
+
+
+
 
 class ChatLogViewModel: ObservableObject {
     
@@ -71,6 +60,30 @@ class ChatLogViewModel: ObservableObject {
             
         }
     }
+    
+    func storeRercentMessage() {
+        guard let chatUser = chatUser else { return }
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let toId = self.chatUser?.uid else { return }
+        
+        let data = [
+            "date": Timestamp(),
+            "text":self.chatText,
+            "fromId": uid,
+            "toId": toId,
+            "profileImageUrl": chatUser.profileImageUrl,
+            "email": chatUser.email
+        ] as [String : Any]
+        
+        Firestore.firestore().collection("recentMessages").document(uid).collection("messages").document(toId).setData(data) { error in
+            if let error = error {
+                self.errorMessage = "Failed to save recent message: \(error)"
+                print("failed to save recent message: \(error)")
+                return
+            }
+        }
+    }
+    
     func sendMessage(text: String) {
         
         print("to:", chatUser?.uid ?? "from uid")
@@ -95,8 +108,12 @@ class ChatLogViewModel: ObservableObject {
                     return
                 }
                 print("sended a message")
+                self.storeRercentMessage()
+                
                 self.chatText = ""
                 self.errorMessage = ""
+                
+
             }
         
         Firestore.firestore().collection("messages")
@@ -184,6 +201,7 @@ struct ChatLogView: View {
         HStack(spacing: 16){
             Image(systemName: "photo")
             TextField("hello", text: $vm.chatText)
+                .autocapitalization(.none)
             Button {
                 vm.sendMessage(text: vm.chatText)
             } label: {
@@ -241,9 +259,9 @@ struct MessageView: View {
 
 struct ChatLogView_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationView{
-            //                        ChatLogView(chatUser: .init(data: ["uid":"123" ,"email": "124@gmail.com"]))
+//        NavigationView{
+//            //                        ChatLogView(chatUser: .init(data: ["uid":"123" ,"email": "124@gmail.com"]))
             MainMessageView()
-        }
+//        }
     }
 }

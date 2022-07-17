@@ -15,6 +15,7 @@ class MainMessageViewModel: ObservableObject {
     @Published var errorMessage = ""
     @Published var chatUser: ChatUser?
     @Published var isUserLoggeOut = false
+    @Published var recentMessages = [RecentMessage]()
     
     init() {
         
@@ -23,6 +24,33 @@ class MainMessageViewModel: ObservableObject {
         }
         
         fetchCurrentUser()
+        
+        fetchRecentMessages()
+    }
+    
+    private func fetchRecentMessages(){
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        Firestore.firestore().collection("recentMessages").document(uid).collection("messages").order(by: "date").addSnapshotListener { querySnapshot, error in
+            if let error = error {
+                self.errorMessage = "Failed to fetch recent messages \(error)"
+                return
+            }
+            querySnapshot?.documentChanges.forEach({ change in
+                
+                let docId = change.document.documentID
+                
+                if let index = self.recentMessages.firstIndex(where: { rm in
+                    return rm.documentId == docId
+                }) {
+                    self.recentMessages.remove(at:index)
+                    
+                }
+                self.recentMessages.insert(.init(documentId: docId, data: change.document.data()), at: 0)
+                    
+            })
+        }
+        
     }
     
     
@@ -125,24 +153,32 @@ struct MainMessageView: View {
     
     private var messageView: some View {
         ScrollView{
-            ForEach(0..<10, id: \.self){ num in
+            ForEach(vm.recentMessages){ recentMessage in
                 VStack{
                     NavigationLink{
                         Text("dd")
                     } label: {
                         HStack(spacing: 16){
-                            Image(systemName: "person.fill")
-                                .font(.system(size: 32))
+                            WebImage(url: URL(string: recentMessage.profileImageUrl ))
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 53, height: 53)
+                                .clipped()
+                                .cornerRadius(44)
                             
-                            VStack{
-                                Text("username")
+                            VStack(alignment: .leading){
+                                Text(recentMessage.email)
                                     .font(.system(size: 16, weight: .bold))
-                                Text("message")
+                                    .foregroundColor(Color.black)
+                                Text(recentMessage.text)
+                                    .foregroundColor(Color.gray)
                             }
                             Spacer()
                             Text("date")
+                                .font(.system(size: 14, weight: .semibold))
                         }
                     }
+                    
                     Divider()
                         .padding(.vertical, 8)
                     
