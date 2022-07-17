@@ -9,6 +9,7 @@ import SwiftUI
 import Firebase
 import FirebaseFirestore
 import SDWebImageSwiftUI
+import FirebaseFirestoreSwift
 
 class MainMessageViewModel: ObservableObject {
     
@@ -28,7 +29,7 @@ class MainMessageViewModel: ObservableObject {
         fetchRecentMessages()
     }
     
-    private func fetchRecentMessages(){
+    func fetchRecentMessages(){
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
         Firestore.firestore().collection("recentMessages").document(uid).collection("messages").order(by: "date").addSnapshotListener { querySnapshot, error in
@@ -41,13 +42,22 @@ class MainMessageViewModel: ObservableObject {
                 let docId = change.document.documentID
                 
                 if let index = self.recentMessages.firstIndex(where: { rm in
-                    return rm.documentId == docId
+                    return rm.id == docId
                 }) {
                     self.recentMessages.remove(at:index)
                     
                 }
-                self.recentMessages.insert(.init(documentId: docId, data: change.document.data()), at: 0)
+                
+                do {
+                    let rm = try change.document.data(as: RecentMessage.self)
+                    self.recentMessages.insert(rm, at:0)
                     
+                } catch {
+                    print(error)
+                    
+                }
+                
+                
             })
         }
         
@@ -142,10 +152,12 @@ struct MainMessageView: View {
                 vm.signOutFirebase()
             }),
                      .cancel()
-                    ])}.fullScreenCover(isPresented: $vm.isUserLoggeOut) {
+                    ])}
+        .fullScreenCover(isPresented: $vm.isUserLoggeOut) {
                 LoginView {
                     self.vm.isUserLoggeOut = false
                     self.vm.fetchCurrentUser()
+                    self.vm.fetchRecentMessages()
                 }
             }
         
@@ -174,8 +186,15 @@ struct MainMessageView: View {
                                     .foregroundColor(Color.gray)
                             }
                             Spacer()
-                            Text("date")
-                                .font(.system(size: 14, weight: .semibold))
+                            VStack{
+                                Text(recentMessage.date, style: .date)
+                                Text(recentMessage.date, style: .time)
+                                
+                            }
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(Color.gray)
+                            
+                                
                         }
                     }
                     
