@@ -22,9 +22,11 @@ class ChatLogViewModel: ObservableObject {
     
     @Published var scrollCount = 0
     
+    @Published var currentUser = [ChatUser]()
     
     
-    let chatUser : ChatUser?
+    
+    var chatUser : ChatUser?
     
     
     init(chatUser: ChatUser?){
@@ -34,10 +36,16 @@ class ChatLogViewModel: ObservableObject {
     }
     
     
-    private func fetchMessages(){
+    var firestoreListener: ListenerRegistration?
+    
+    func fetchMessages(){
         guard let fromId = Auth.auth().currentUser?.uid else { return }
         guard let toId = chatUser?.uid else { return }
-        Firestore.firestore().collection("messages").document(fromId).collection(toId).order(by: "date").addSnapshotListener { querySnapshot, error in
+        
+        firestoreListener?.remove()
+        chatMessages.removeAll()
+        
+        firestoreListener = Firestore.firestore().collection("messages").document(fromId).collection(toId).order(by: "date").addSnapshotListener { querySnapshot, error in
             if let error = error {
                 self.errorMessage = "Failed to get messages \(error)"
                 print(error)
@@ -63,10 +71,16 @@ class ChatLogViewModel: ObservableObject {
     
     func storeRercentMessage() {
         guard let chatUser = chatUser else { return }
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let uid = FirebaseManager.shared.auth.currentUser?.uid else { return }
         guard let toId = self.chatUser?.uid else { return }
+        guard let currentUser = FirebaseManager.shared.currentUser else {
+            return }
         
-        let data = [
+        print(currentUser)
+        
+        
+        
+        let dataForMe = [
             "date": Timestamp(),
             "text":self.chatText,
             "fromId": uid,
@@ -75,12 +89,33 @@ class ChatLogViewModel: ObservableObject {
             "email": chatUser.email
         ] as [String : Any]
         
-        Firestore.firestore().collection("recentMessages").document(uid).collection("messages").document(toId).setData(data) { error in
+        Firestore.firestore().collection("recentMessages").document(uid).collection("messages").document(toId).setData(dataForMe) { error in
             if let error = error {
                 self.errorMessage = "Failed to save recent message: \(error)"
                 print("failed to save recent message: \(error)")
                 return
             }
+            print("stored recent data for me")
+        }
+        
+
+        let dataForYou = [
+            "date": Timestamp(),
+            "text":self.chatText,
+            "fromId": uid,
+            "toId": toId,
+            "profileImageUrl": currentUser.profileImageUrl,
+            "email": currentUser.email
+        ] as [String : Any]
+        
+
+        Firestore.firestore().collection("recentMessages").document(toId).collection("messages").document(currentUser.uid).setData(dataForYou) { error in
+            if let error = error {
+                self.errorMessage = "Failed to save recent message: \(error)"
+                print("failed to save recent message: \(error)")
+                return
+            }
+            print("stored recent data for you")
         }
     }
     
@@ -134,13 +169,13 @@ class ChatLogViewModel: ObservableObject {
 
 struct ChatLogView: View {
     
-    let chatUser: ChatUser?
-    
-    init(chatUser: ChatUser?) {
-        self.chatUser = chatUser
-        self.vm = .init(chatUser: chatUser)
-        
-    }
+//    let chatUser: ChatUser?
+//
+//    init(chatUser: ChatUser?) {
+//        self.chatUser = chatUser
+//        self.vm = .init(chatUser: chatUser)
+//
+//    }
     
     @State var chatMessage = ""
     
@@ -156,13 +191,11 @@ struct ChatLogView: View {
             
             
         }
-        .navigationTitle(chatUser?.email ?? "chatopponent")
+        .navigationTitle(vm.chatUser?.email ?? "chatopponent")
         .navigationBarTitleDisplayMode(.inline)
-//        .navigationBarItems(trailing: Button(action: {
-//            vm.scrollCount += 1
-//        }, label: {
-//            Text("count: \(vm.scrollCount)")
-//        }))
+        .onDisappear{
+            vm.firestoreListener?.remove()
+        }
     }
     
     private var messagesView: some View {

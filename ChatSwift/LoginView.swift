@@ -14,8 +14,8 @@ struct LoginView: View {
     let didloginProcess: () -> ()
     
     @State private var isLoginMode = true
-    @State private var email = ""
-    @State private var password = ""
+    @State private var email = "test@test.com"
+    @State private var password = "password"
     @State private var passwordCheck = ""
     @State private var errorMessage = ""
     @State private var successMessage = ""
@@ -159,7 +159,7 @@ struct LoginView: View {
     
     private func login(){
         
-        Auth.auth().signIn(withEmail: email, password: password) {
+        FirebaseManager.shared.auth.signIn(withEmail: email, password: password) {
             result, error in
             if let error = error {
                 print("Failed to login user:", error)
