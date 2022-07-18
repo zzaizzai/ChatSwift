@@ -6,17 +6,11 @@
 //
 
 import Foundation
+import FirebaseFirestoreSwift
 
-struct ChatUser: Identifiable {
+struct ChatUser:Codable, Identifiable {
     
-    var id: String { uid }
-    
+    @DocumentID var id: String?
     let uid, email, profileImageUrl: String
     
-    init(data: [String: Any]) {
-        self.uid = data["uid"] as? String ?? ""
-        self.email = data["email"] as? String ?? ""
-        self.profileImageUrl = data["profileImageUrl"] as? String ?? ""
-        
-    }
 }
